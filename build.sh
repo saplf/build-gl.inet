@@ -21,6 +21,18 @@ fi
 if [ ! -n "$ui" ]; then
     ui=true
 fi
+
+if [ ! -n "$WIRELESS_NAME" ]; then
+    WIRELESS_NAME="OpenWrt"
+fi
+
+if [ ! -n "$WIRELESS_PWD" ]; then
+    WIRELESS_PWD="1234567890"
+fi
+
+if [ ! -n "$CONSOLE_PWD" ]; then
+    CONSOLE_PWD="1234567890"
+fi
 echo "Start..."
 
 #clone source tree 
@@ -29,6 +41,15 @@ cp -r custom/  $base/gl-infra-builder/feeds/custom/
 cp -r *.yml $base/gl-infra-builder/profiles
 cd $base/gl-infra-builder
 
+# 修改默认配置
+# 把 zzz-default-settings 文件的位置抽取成一个变量 DEFAULT_SETTING_FILE
+DEFAULT_SETTING_FILE=feeds/custom/default-settings/files/zzz-default-settings
+# 在 custom/default-settings/files/zzz-default-settings 第二行加上：WIRELESS_NAME="OpenWrt"
+sed -i "2i WIRELESS_NAME=\"$WIRELESS_NAME\"" $DEFAULT_SETTING_FILE
+# 然后再加上 WIRELESS_PWD
+sed -i "3i WIRELESS_PWD=\"$WIRELESS_PWD\"" $DEFAULT_SETTING_FILE
+# 然后再加上 CONSOLE_PWD
+sed -i "4i CONSOLE_PWD=\"$CONSOLE_PWD\"" $DEFAULT_SETTING_FILE
 
 function build_firmware(){
     cd ~/openwrt
@@ -131,4 +152,3 @@ case $profile in
         build_firmware $ui ath79 && copy_file ~/openwrt/bin/targets/*/*
     ;;
 esac
-
